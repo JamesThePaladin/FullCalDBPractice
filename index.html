@@ -36,41 +36,31 @@
                 editable: true,
                 dayMaxEvents: true, // allow "more" link when too many events
                 select: function (start, end, allDay) {
-                    var title = prompt("Enter Event Title");
-                    if (title) {
-                        var start = calendar.formatDate(start, {
-                            month: "2-digit",
-                            year: "numeric",
-                            day: "2-digit",
-                            weekday: "long"
-                        });
-                        var end = calendar.formatDate(end, {
-                            month: "2-digit",
-                            year: "numeric",
-                            day: "2-digit",
-                            weekday: "long"
-                        });
-                        $.ajax({
-                            url: "insert.php",
-                            type: "POST",
-                            data: { title: title, start: start, end: end },
-                            success: function () {
-                                calendar.reftechEvents();
-                                alert("Added Successfully");
-                            }
-                        })
-                    }
+                    // var title = prompt("Enter Event Title");
+                    // if (title) {
+                    //     var start = calendar.formatDate(start, {
+                    //         month: "2-digit",
+                    //         year: "numeric",
+                    //         day: "2-digit",
+                    //         weekday: "long"
+                    //     });
+                    //     var end = calendar.formatDate(end, {
+                    //         month: "2-digit",
+                    //         year: "numeric",
+                    //         day: "2-digit",
+                    //         weekday: "long"
+                    //     });
+                        
+                    // }
                 },
-                // eventClick: function (arg) {
-                //   if (confirm('Are you sure you want to delete this event?')) {
-                //     arg.event.remove()
-                //   }
-                // },
                 events: 'https://fullcalendar.io/demo-events.json',
                 eventClick: function (info) {
                     $("#title-entry-edit").val(info.event.title);
                     $("#edit-event").modal('show');
                 },
+                dateClick: function (info) {
+                    $("#new-event").modal('show');
+                }
             });
 
 
@@ -111,8 +101,8 @@
                                         autocomplete="off"></label>
                             </div>
                         </div>
-                        <input type="hidden" class="new-event--start" value="2021-09-23">
-                        <input type="hidden" class="new-event--end" value="2021-09-23">
+                        <label class="form-control-label d-block mb-3">Start Date</label><input type="datetime" class="new-event--start" placeholder="DD/MM/YYY" value="">
+                        <label class="form-control-label d-block mb-3">End Date</label><input type="datetime" class="new-event--end" placeholder="DD/MM/YYYY" value="">
                     </form>
                 </div>
                 <!-- Modal footer -->
