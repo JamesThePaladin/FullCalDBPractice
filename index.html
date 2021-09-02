@@ -59,24 +59,9 @@
                     //I commented this out to prevent creating an event by selection
                     //I'm not sure if we need select: or not but we could probably use it in some way
 
-                    // var title = prompt("Enter Event Title");
-                    // if (title) {
-                    //     var start = calendar.formatDate(start, {
-                    //         month: "2-digit",
-                    //         year: "numeric",
-                    //         day: "2-digit",
-                    //         weekday: "long"
-                    //     });
-                    //     var end = calendar.formatDate(end, {
-                    //         month: "2-digit",
-                    //         year: "numeric",
-                    //         day: "2-digit",
-                    //         weekday: "long"
-                    //     });
-
-                    // }
                 },
-                events: 'load.php', //load the events from our db
+                events: 'https://fullcalendar.io/demo-events.json', //load the events from our db, for whatever reason load.php is now failing to parse JSON and it was not before, 
+                //so these are some demo examples Im pulling
                 eventClick: function (info) { //https://fullcalendar.io/docs/eventClick
                     $("#title-entry-edit").val(info.event.title); //find the field with the id of title-entry-edit and put the event title in there
                     $("#edit-event").modal('show'); //show the modal
@@ -84,7 +69,7 @@
                 dateClick: function (info) { //https://fullcalendar.io/docs/dateClick
                     $("#new-event").modal('show'); //show the modal
                 },
-                eventDrop: function (info) {
+                eventDrop: function (info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
                     var start = calendar.formatDate(info.event.start, { //declare start var and fill it with the event start formatted date
                         month: "2-digit",
                         year: "numeric",
@@ -101,7 +86,10 @@
                     var id = info.event.id; //and the id
                     $.ajax({ //upload it to the db using ajax/php
                         url: "update.php",
-                        type: "POST",
+                        method: "POST",
+                        headers: {
+                            'Access-Control-Allow-Origin': '*'
+                        },
                         data: {
                             title: title,
                             start: start,
@@ -136,7 +124,10 @@
                     var id = info.event.id; //and the id
                     $.ajax({ //upload it to the db using ajax/php
                         url: "update.php",
-                        type: "POST",
+                        method: "POST",
+                        headers: {
+                            'Access-Control-Allow-Origin': '*'
+                        },
                         data: {
                             title: title,
                             start: start,
