@@ -10,18 +10,37 @@
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link href='main.min.css' rel='stylesheet' />
     <link href='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.3/jquery-ui.css' rel='stylesheet' />
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
         crossorigin="anonymous"></script>
     <script src='main.min.js'></script>
     <script>
         //FullCalendar initialization
+        /*
+        the info parameters on all of these functions are info objects, they contain data about a bunch of cool shit
+        https://fullcalendar.io/docs/select-callback you can go here for an example of the select object 
+        but they all provide different accessibility to attributes on event object.
+        the documentation doesnt say this but to access an event title you need to 
+        */
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
-            let clickCnt = 0;
+            let clickCnt = 0; //this is for double clicking
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 headerToolbar: {
                     left: 'prev,next today',
@@ -29,13 +48,17 @@
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 timeZone: 'local',
-                initialDate: Date().now,
+                initialDate: Date().now, //set the initial date to right now
                 navLinks: true, // can click day/week names to navigate views
                 selectable: true,
                 selectMirror: true,
                 editable: true,
                 dayMaxEvents: true, // allow "more" link when too many events
-                select: function (start, end, allDay) {
+                select: function (info) { //https://fullcalendar.io/docs/select-callback
+
+                    //I commented this out to prevent creating an event by selection
+                    //I'm not sure if we need select: or not but we could probably use it in some way
+
                     // var title = prompt("Enter Event Title");
                     // if (title) {
                     //     var start = calendar.formatDate(start, {
@@ -50,22 +73,93 @@
                     //         day: "2-digit",
                     //         weekday: "long"
                     //     });
-                        
+
                     // }
                 },
-                events: 'https://fullcalendar.io/demo-events.json',
-                eventClick: function (info) {
-                    $("#title-entry-edit").val(info.event.title);
-                    $("#edit-event").modal('show');
+                events: 'load.php', //load the events from our db
+                eventClick: function (info) { //https://fullcalendar.io/docs/eventClick
+                    $("#title-entry-edit").val(info.event.title); //find the field with the id of title-entry-edit and put the event title in there
+                    $("#edit-event").modal('show'); //show the modal
                 },
-                dateClick: function (info) {
-                    $("#new-event").modal('show');
+                dateClick: function (info) { //https://fullcalendar.io/docs/dateClick
+                    $("#new-event").modal('show'); //show the modal
+                },
+                eventDrop: function (info) {
+                    var start = calendar.formatDate(info.event.start, { //declare start var and fill it with the event start formatted date
+                        month: "2-digit",
+                        year: "numeric",
+                        day: "2-digit",
+                        weekday: "long"
+                    });
+                    var end = calendar.formatDate(info.event.end, { //declare end var and fill it with the event end formatted date
+                        month: "2-digit",
+                        year: "numeric",
+                        day: "2-digit",
+                        weekday: "long"
+                    });
+                    var title = info.event.title; //get the title from the event
+                    var id = info.event.id; //and the id
+                    $.ajax({ //upload it to the db using ajax/php
+                        url: "update.php",
+                        type: "POST",
+                        data: {
+                            title: title,
+                            start: start,
+                            end: end,
+                            id: id
+                        },
+                        success: function () { //if its successful
+                            calendar.refetchEvents(); //refetch events
+                            alert('Event Update'); //let the user know
+                        },
+                        failure: function () { //if it fails
+                            alert("Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                        },
+                    })
+                },
+                eventResize: function (info) { //https://fullcalendar.io/docs/eventResize
+                    //Im not really sure if the below will work, I plan on testing it today (9/2/2021)
+                    //but might not get around to it
+                    var start = calendar.formatDate(info.event.start, { //declare start var and fill it with the event start formatted date
+                        month: "2-digit",
+                        year: "numeric",
+                        day: "2-digit",
+                        weekday: "long"
+                    });
+                    var end = calendar.formatDate(info.event.end, { //declare end var and fill it with the event end formatted date
+                        month: "2-digit",
+                        year: "numeric",
+                        day: "2-digit",
+                        weekday: "long"
+                    });
+                    var title = info.event.title; //get the title from the event
+                    var id = info.event.id; //and the id
+                    $.ajax({ //upload it to the db using ajax/php
+                        url: "update.php",
+                        type: "POST",
+                        data: {
+                            title: title,
+                            start: start,
+                            end: end,
+                            id: id
+                        },
+                        success: function () { //if its successful
+                            calendar.refetchEvents(); //refetch events
+                            alert('Event Update'); //let the user know
+                        },
+                        failure: function () { //if it fails
+                            alert("Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                        },
+                    })
                 }
             });
 
 
             calendar.render();
         });
+
+        //below is the script for the buttons, each one will interact with the db to update/delete/insert events
+
     </script>
 </head>
 
@@ -101,11 +195,14 @@
                                         autocomplete="off"></label>
                             </div>
                         </div>
-                        <label class="form-control-label d-block mb-3">Start Date</label><input type="datetime" class="new-event--start" placeholder="DD/MM/YYY" value="">
-                        <label class="form-control-label d-block mb-3">End Date</label><input type="datetime" class="new-event--end" placeholder="DD/MM/YYYY" value="">
+                        <label class="form-control-label d-block mb-3">Start Date</label><input type="datetime"
+                            class="new-event--start" placeholder="DD/MM/YYY" value="">
+                        <label class="form-control-label d-block mb-3">End Date</label><input type="datetime"
+                            class="new-event--end" placeholder="DD/MM/YYYY" value="">
                     </form>
                 </div>
                 <!-- Modal footer -->
+                <!--These buttones in the footer might not work, they're running off of bootstrap's min.js not FullCalendar's-->
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary new-event--add">Add event</button>
                     <button type="button" class="btn btn-link ml-auto" data-dismiss="modal">Close</button>
@@ -125,7 +222,8 @@
                     <form class="edit-event--form">
                         <div class="form-group">
                             <label class="form-control-label">Event title</label>
-                            <input type="text" id="title-entry-edit" class="form-control form-control-alternative edit-event--title"
+                            <input type="text" id="title-entry-edit"
+                                class="form-control form-control-alternative edit-event--title"
                                 placeholder="Event Title" val="">
                         </div>
                         <div class="form-group">
@@ -157,6 +255,7 @@
                     </form>
                 </div>
                 <!-- Modal footer -->
+                <!--These buttones in the footer might not work, they're running off of bootstrap's min.js not FullCalendar's-->
                 <div class="modal-footer">
                     <button class="btn btn-primary" data-calendar="update">Update</button>
                     <button class="btn btn-danger" data-calendar="delete">Delete</button>
