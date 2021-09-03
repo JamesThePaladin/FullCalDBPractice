@@ -1,8 +1,7 @@
 <?php
-
 //load.php
 
-$connect = new PDO('mysql:host=localhost;dbname=test', 'root', '');
+$connect = new PDO('mysql:dbname=test;host=localhost:8080', 'root', '');
 
 $data = array();
 

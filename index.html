@@ -60,7 +60,16 @@
                     //I'm not sure if we need select: or not but we could probably use it in some way
 
                 },
-                events: 'https://fullcalendar.io/demo-events.json', //load the events from our db, for whatever reason load.php is now failing to parse JSON and it was not before, 
+                events: { //this section is where all the event loading is done when the calendar starts up
+                    url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
+                    method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
+                    failure: function() { //this simply returns the alert on a failure
+                        alert('An error occured while loading events! :(');
+                    },
+                    success: function() { //and this simply returns an alert on success
+                        alert('Events successfully loaded!:(');
+                    },
+                }, //load the events from our db, for whatever reason load.php is now failing to parse JSON and it was not before, 
                 //so these are some demo examples Im pulling
                 eventClick: function (info) { //https://fullcalendar.io/docs/eventClick
                     $("#title-entry-edit").val(info.event.title); //find the field with the id of title-entry-edit and put the event title in there
@@ -70,13 +79,13 @@
                     $("#new-event").modal('show'); //show the modal
                 },
                 eventDrop: function (info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
-                    var start = calendar.formatDate(info.event.start, { //declare start var and fill it with the event start formatted date
+                    var start = calendar.formatIso(info.event.start, { //declare start var and fill it with the event start formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
                         weekday: "long"
                     });
-                    var end = calendar.formatDate(info.event.end, { //declare end var and fill it with the event end formatted date
+                    var end = calendar.formatIso(info.event.end, { //declare end var and fill it with the event end formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
@@ -87,7 +96,7 @@
                     $.ajax({ //upload it to the db using ajax/php
                         url: "update.php",
                         method: "POST",
-                        headers: {
+                        headers: { //this might be necessary for CORS to bypass the cross-origin requests. Not sure though as I always have this header in my <Directory>
                             'Access-Control-Allow-Origin': '*'
                         },
                         data: {
@@ -98,7 +107,7 @@
                         },
                         success: function () { //if its successful
                             calendar.refetchEvents(); //refetch events
-                            alert('Event Update'); //let the user know
+                            alert('Event Updated'); //let the user know
                         },
                         failure: function () { //if it fails
                             alert("Event updated failed, please yell at Justin or James."); //tell them to come yell at us
