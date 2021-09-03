@@ -2,7 +2,7 @@
 //load.php
 header("Content-Type: application/json");
 
-$connect = new PDO('mysql:dbname=test;host=localhost:8080', 'root', '');
+$connect = new PDO('mysql:dbname=test;host=localhost:8080', 'root', '') ;
 
 $data = array();
 
@@ -19,8 +19,8 @@ foreach($result as $row)
  $data[] = array(
   'id'   => $row["id"],
   'title'   => $row["title"],
-  'start'   => $row["start_event"]->format("dd-mm-Y H:i:s"),
-  'end'   => $row["end_event"]->format("dd-mm-Y H:i:s")
+  'start'   => $row["start_event"],
+  'end'   => $row["end_event"]
  );
 }
 

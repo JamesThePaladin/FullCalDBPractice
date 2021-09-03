@@ -62,8 +62,11 @@
                 },
                 //just as a note before I left on friday, the JSON start and end strings are returning as 
                 //start: 2021-08-29T00:00:00-07:00 end: 2021-10-10T00:00:00-07:00
-                //so Im getting a singular start and end somehow and for whatever reason it says it needs ISO strings but it cant parse them?
+                //these aren't even in my database, for some reason it is requesting these two dates.
+                //so Im getting a singular start and end somehow and for whatever reason its requesting specific dates that exist nowhere in this code
                 //jr_dev_explode.jpeg
+                //here is the query string: http://127.0.0.1:5500/load.php?start=2021-08-29T00%3A00%3A00-07%3A00&end=2021-10-10T00%3A00%3A00-07%3A00
+                //we never get passed the loading of events so anything below url: load.php is not the cause of our problem.
                 events: { //this section is where all the event loading is done when the calendar starts up
                     url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
                     method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
