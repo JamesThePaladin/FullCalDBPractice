@@ -60,9 +60,14 @@
                     //I'm not sure if we need select: or not but we could probably use it in some way
 
                 },
+                //just as a note before I left on friday, the JSON start and end strings are returning as 
+                //start: 2021-08-29T00:00:00-07:00 end: 2021-10-10T00:00:00-07:00
+                //so Im getting a singular start and end somehow and for whatever reason it says it needs ISO strings but it cant parse them?
+                //jr_dev_explode.jpeg
                 events: { //this section is where all the event loading is done when the calendar starts up
                     url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
                     method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
+                    format: 'json',
                     failure: function() { //this simply returns the alert on a failure
                         alert('An error occured while loading events! :(');
                     },
