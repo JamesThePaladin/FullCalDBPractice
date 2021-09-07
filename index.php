@@ -111,32 +111,9 @@
             });
         });
     </script>
-    <style>
-        .ui-btn-group {
-            position:absolute;
-            float: left;
-            margin-left:150px;
-            margin-top:150px;
-            clear:both;
-        }
-    </style>
 </head>
 
 <body>
-<div class="ui-btn-group">
-        <table>
-            <tr>
-                <td>
-                    <button class="ui-btn">Add Job</button>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <button class="ui-btn">Delete Job</button>
-                </td>
-            </tr>
-        </table>
-    </div>
     <br />
     <h2 align="center"><a href="#">Jquery Fullcalandar Integration with PHP and Mysql</a></h2>
     <br />

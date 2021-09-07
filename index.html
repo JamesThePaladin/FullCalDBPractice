@@ -27,9 +27,25 @@
         integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-        crossorigin="anonymous"></script>
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous">
+    </script>
     <script src='main.min.js'></script>
+    <style>
+        /* <--delete me after changing event url
+
+        .fc-h-event .fc-event-title-container {
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 0;
+            height: 50px;
+        }
+        
+        /*
+        Above is the css that controls the width of the events, it is in the fullcalendar main.css on line 591.
+        Add height: ; or something to it to increase the thiccness of the events
+        below is an example, if you wish to see it change events: {url: 'load.php'} to {url: 'https://fullcalendar.io/demo-events.json'} and uncomment the above css
+        */
+    </style>
     <script>
         //FullCalendar initialization
         /*
@@ -53,6 +69,8 @@
                 selectable: true,
                 selectMirror: true,
                 editable: true,
+                nowIndicator: true, //this puts a red arrow/line through the current time on the day view and highlits the current day in yellow
+                contentHeight: 1000, //https://fullcalendar.io/docs/sizing this option specifically is what we can set dynamically to change row height when clicked
                 dayMaxEvents: true, // allow "more" link when too many events
                 select: function (info) { //https://fullcalendar.io/docs/select-callback
 
@@ -60,40 +78,40 @@
                     //I'm not sure if we need select: or not but we could probably use it in some way
 
                 },
-                //just as a note before I left on friday, the JSON start and end strings are returning as 
-                //start: 2021-08-29T00:00:00-07:00 end: 2021-10-10T00:00:00-07:00
-                //these aren't even in my database, for some reason it is requesting these two dates.
-                //so Im getting a singular start and end somehow and for whatever reason its requesting specific dates that exist nowhere in this code
-                //jr_dev_explode.jpeg
-                //here is the query string: http://127.0.0.1:5500/load.php?start=2021-08-29T00%3A00%3A00-07%3A00&end=2021-10-10T00%3A00%3A00-07%3A00
-                //we never get passed the loading of events so anything below url: load.php is not the cause of our problem.
-                events: { //this section is where all the event loading is done when the calendar starts up
-                    url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
-                    method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
-                    format: 'json',
-                    failure: function() { //this simply returns the alert on a failure
-                        alert('An error occured while loading events! :(');
-                    },
-                    success: function() { //and this simply returns an alert on success
-                        alert('Events successfully loaded!:(');
-                    },
+                events: function (info) { //this section is where all the event loading is done when the calendar starts up
+                    $.ajax({
+                        url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
+                        method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
+                        failure: function () { //this simply returns the alert on a failure
+                            alert('An error occured while loading events! :(');
+                        },
+                        success: function () { //and this simply returns an alert on success
+                            alert('Events successfully loaded! :)');
+                            //after testing with different php files, I cant get the events to load
+                            //but it always says success no matter what, I may have a logic error in here somewhere
+                        },
+                    })
                 }, //load the events from our db, for whatever reason load.php is now failing to parse JSON and it was not before, 
                 //so these are some demo examples Im pulling
                 eventClick: function (info) { //https://fullcalendar.io/docs/eventClick
-                    $("#title-entry-edit").val(info.event.title); //find the field with the id of title-entry-edit and put the event title in there
+                    $("#title-entry-edit").val(info.event
+                    .title); //find the field with the id of title-entry-edit and put the event title in there
                     $("#edit-event").modal('show'); //show the modal
                 },
                 dateClick: function (info) { //https://fullcalendar.io/docs/dateClick
                     $("#new-event").modal('show'); //show the modal
                 },
-                eventDrop: function (info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
-                    var start = calendar.formatIso(info.event.start, { //declare start var and fill it with the event start formatted date
+                eventDrop: function (
+                info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
+                    var start = calendar.formatIso(info.event
+                    .start, { //declare start var and fill it with the event start formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
                         weekday: "long"
                     });
-                    var end = calendar.formatIso(info.event.end, { //declare end var and fill it with the event end formatted date
+                    var end = calendar.formatIso(info.event
+                    .end, { //declare end var and fill it with the event end formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
@@ -107,6 +125,7 @@
                         headers: { //this might be necessary for CORS to bypass the cross-origin requests. Not sure though as I always have this header in my <Directory>
                             'Access-Control-Allow-Origin': '*'
                         },
+                        dataType: 'json',
                         data: {
                             title: title,
                             start: start,
@@ -118,20 +137,23 @@
                             alert('Event Updated'); //let the user know
                         },
                         failure: function () { //if it fails
-                            alert("Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                            alert(
+                                "Event updated failed, please yell at Justin or James."); //tell them to come yell at us
                         },
                     })
                 },
                 eventResize: function (info) { //https://fullcalendar.io/docs/eventResize
                     //Im not really sure if the below will work, I plan on testing it today (9/2/2021)
                     //but might not get around to it
-                    var start = calendar.formatDate(info.event.start, { //declare start var and fill it with the event start formatted date
+                    var start = calendar.formatDate(info.event
+                    .start, { //declare start var and fill it with the event start formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
                         weekday: "long"
                     });
-                    var end = calendar.formatDate(info.event.end, { //declare end var and fill it with the event end formatted date
+                    var end = calendar.formatDate(info.event
+                    .end, { //declare end var and fill it with the event end formatted date
                         month: "2-digit",
                         year: "numeric",
                         day: "2-digit",
@@ -156,7 +178,8 @@
                             alert('Event Update'); //let the user know
                         },
                         failure: function () { //if it fails
-                            alert("Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                            alert(
+                                "Event updated failed, please yell at Justin or James."); //tell them to come yell at us
                         },
                     })
                 }
@@ -167,11 +190,11 @@
         });
 
         //below is the script for the buttons, each one will interact with the db to update/delete/insert events
-
     </script>
 </head>
 
 <body>
+    <!--FullCalendar-->
     <div id="calendar"></div>
     <!--Modal Add Init-->
     <div class="modal fade" id="new-event" tabindex="-1" role="dialog" aria-labelledby="new-event-label"
