@@ -29,7 +29,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous">
     </script>
+    <!-- moment lib -->
+    <script src='https://cdn.jsdelivr.net/npm/moment@2.27.0/min/moment.min.js'></script>
     <script src='main.min.js'></script>
+    <!-- the moment-to-fullcalendar connector. must go AFTER the moment lib -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/moment@5.5.0/main.global.min.js'></script>
     <style>
         /* <--delete me after changing event url
 
@@ -56,7 +60,6 @@
         */
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
-            let clickCnt = 0; //this is for double clicking
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 headerToolbar: {
                     left: 'prev,next today',
@@ -69,54 +72,42 @@
                 selectable: true,
                 selectMirror: true,
                 editable: true,
-                nowIndicator: true, //this puts a red arrow/line through the current time on the day view and highlits the current day in yellow
-                contentHeight: 1000, //https://fullcalendar.io/docs/sizing this option specifically is what we can set dynamically to change row height when clicked
-                dayMaxEvents: true, // allow "more" link when too many events
-                select: function (info) { //https://fullcalendar.io/docs/select-callback
-
-                    //I commented this out to prevent creating an event by selection
-                    //I'm not sure if we need select: or not but we could probably use it in some way
-
+                events: { //this is where the event loading is done and I no longer think this is our problem
+                    url: 'load.php', //load php does return valid JSON, see below
+                    //[{"id":"1","title":"test 1","start":"2021-09-14 13:46:17","end":"2021-09-15 13:46:17"},{"id":"2","title":"test 2","start":"2021-09-20 13:46:17","end":"2021-09-23 13:46:17"}]
+                    method: 'GET',
+                    failure: function () {
+                        alert("There was an error while fetching events :(");
+                    },
+                    success: function () {
+                        alert("events fetched successfully! :)");
+                    },
                 },
-                events: function (info) { //this section is where all the event loading is done when the calendar starts up
-                    $.ajax({
-                        url: 'load.php', //this is our url for our db or the php file/js function we are using to load our shit
-                        method: 'GET', //the method by which we load it, CORS doesnt like POST so im using GET, a safe method
-                        failure: function () { //this simply returns the alert on a failure
-                            alert('An error occured while loading events! :(');
-                        },
-                        success: function () { //and this simply returns an alert on success
-                            alert('Events successfully loaded! :)');
-                            //after testing with different php files, I cant get the events to load
-                            //but it always says success no matter what, I may have a logic error in here somewhere
-                        },
-                    })
-                }, //load the events from our db, for whatever reason load.php is now failing to parse JSON and it was not before, 
-                //so these are some demo examples Im pulling
+                dayMaxEvents: true, // allow "more" link when too many events
                 eventClick: function (info) { //https://fullcalendar.io/docs/eventClick
                     $("#title-entry-edit").val(info.event
-                    .title); //find the field with the id of title-entry-edit and put the event title in there
+                        .title
+                        ); //find the field with the id of title-entry-edit and put the event title in there
                     $("#edit-event").modal('show'); //show the modal
                 },
                 dateClick: function (info) { //https://fullcalendar.io/docs/dateClick
                     $("#new-event").modal('show'); //show the modal
                 },
-                eventDrop: function (
-                info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
+                eventDrop: function (info) { //this updates an event after it has been dragged and dropped, currently this is error 405ing (method not allowed)
                     var start = calendar.formatIso(info.event
-                    .start, { //declare start var and fill it with the event start formatted date
-                        month: "2-digit",
-                        year: "numeric",
-                        day: "2-digit",
-                        weekday: "long"
-                    });
+                        .start, { //declare start var and fill it with the event start formatted date
+                            month: "2-digit",
+                            year: "numeric",
+                            day: "2-digit",
+                            weekday: "long"
+                        });
                     var end = calendar.formatIso(info.event
-                    .end, { //declare end var and fill it with the event end formatted date
-                        month: "2-digit",
-                        year: "numeric",
-                        day: "2-digit",
-                        weekday: "long"
-                    });
+                        .end, { //declare end var and fill it with the event end formatted date
+                            month: "2-digit",
+                            year: "numeric",
+                            day: "2-digit",
+                            weekday: "long"
+                        });
                     var title = info.event.title; //get the title from the event
                     var id = info.event.id; //and the id
                     $.ajax({ //upload it to the db using ajax/php
@@ -126,39 +117,35 @@
                             'Access-Control-Allow-Origin': '*'
                         },
                         dataType: 'json',
-                        data: {
-                            title: title,
-                            start: start,
-                            end: end,
-                            id: id
-                        },
                         success: function () { //if its successful
                             calendar.refetchEvents(); //refetch events
                             alert('Event Updated'); //let the user know
                         },
                         failure: function () { //if it fails
                             alert(
-                                "Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                                "Event updated failed, please yell at Justin or James."
+                                ); //tell them to come yell at us
                         },
                     })
                 },
                 eventResize: function (info) { //https://fullcalendar.io/docs/eventResize
                     //Im not really sure if the below will work, I plan on testing it today (9/2/2021)
                     //but might not get around to it
+                    //EDIT 9/8/2021, did not get around to it
                     var start = calendar.formatDate(info.event
-                    .start, { //declare start var and fill it with the event start formatted date
-                        month: "2-digit",
-                        year: "numeric",
-                        day: "2-digit",
-                        weekday: "long"
-                    });
+                        .start, { //declare start var and fill it with the event start formatted date
+                            month: "2-digit",
+                            year: "numeric",
+                            day: "2-digit",
+                            weekday: "long"
+                        });
                     var end = calendar.formatDate(info.event
-                    .end, { //declare end var and fill it with the event end formatted date
-                        month: "2-digit",
-                        year: "numeric",
-                        day: "2-digit",
-                        weekday: "long"
-                    });
+                        .end, { //declare end var and fill it with the event end formatted date
+                            month: "2-digit",
+                            year: "numeric",
+                            day: "2-digit",
+                            weekday: "long"
+                        });
                     var title = info.event.title; //get the title from the event
                     var id = info.event.id; //and the id
                     $.ajax({ //upload it to the db using ajax/php
@@ -167,19 +154,14 @@
                         headers: {
                             'Access-Control-Allow-Origin': '*'
                         },
-                        data: {
-                            title: title,
-                            start: start,
-                            end: end,
-                            id: id
-                        },
                         success: function () { //if its successful
                             calendar.refetchEvents(); //refetch events
                             alert('Event Update'); //let the user know
                         },
                         failure: function () { //if it fails
                             alert(
-                                "Event updated failed, please yell at Justin or James."); //tell them to come yell at us
+                                "Event updated failed, please yell at Justin or James."
+                                ); //tell them to come yell at us
                         },
                     })
                 }

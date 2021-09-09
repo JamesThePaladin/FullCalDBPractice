@@ -1,9 +1,11 @@
 <?php
 //load.php
+header("Content-Type: application/json");
 $servername = "localhost";
 $dbname = "test";
 $username = "root";
 $password = "";
+
 $connect = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
 $data = array();
@@ -26,7 +28,7 @@ foreach($result as $row)
  );
 }
 
-header("Content-Type: application/json");
+
 echo json_encode($data);
 
 ?>
